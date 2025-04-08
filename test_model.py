@@ -1,5 +1,5 @@
 """
-Code for Problem 1 of HW 2.
+Testing
 """
 import pickle
 import numpy as np
@@ -13,8 +13,6 @@ from train_model import preprocess_dataset, compute_metrics
 
 def init_tester(directory: str) -> Trainer:
     """
-    Prolem 2b: Implement this function.
-
     Creates a Trainer object that will be used to test a fine-tuned
     model on the IMDb test set. The Trainer should fulfill the criteria
     listed in the problem set.
@@ -24,7 +22,6 @@ def init_tester(directory: str) -> Trainer:
     :return: A Trainer used for testing
     """
 
-    # Load the trained model from the given checkpoint directory
     model = BertForSequenceClassification.from_pretrained(directory)
 
     # Define testing arguments (disable training features)
@@ -64,7 +61,7 @@ if __name__ == "__main__":  # Use this script to test your model
     tokenizer = BertTokenizerFast.from_pretrained(model_name)
     imdb["test"] = preprocess_dataset(imdb["test"], tokenizer)
 
-    # Update this line with the actual checkpoint path
+    # One path for BitFit model and one for non-BitFit model
     # checkpoint_path = "./checkpoints_with/run-1/checkpoint-5000"  # For BitFit model
     checkpoint_path = "./checkpoints_without/run-9/checkpoint-2500"  # For non-BitFit model
 

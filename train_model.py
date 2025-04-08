@@ -1,5 +1,5 @@
 """
-Code for Problem 1 of HW 2.
+Training
 """
 import pickle
 from typing import Any, Dict
@@ -21,8 +21,6 @@ if not hasattr(torch, 'get_default_device'):
 def preprocess_dataset(dataset: Dataset, tokenizer: BertTokenizerFast) \
         -> Dataset:
     """
-    Problem 1d: Implement this function.
-
     Preprocesses a dataset using a Hugging Face Tokenizer and prepares it for use in a Hugging Face Trainer.
 
     :param dataset: A dataset containing text samples
@@ -31,11 +29,11 @@ def preprocess_dataset(dataset: Dataset, tokenizer: BertTokenizerFast) \
     """
     def tokenize_function(examples):
         return tokenizer(
-            examples["text"],  # Apply tokenization to the text field
-            truncation=True,   # Truncate sequences longer than 512 tokens
-            padding="max_length",  # Pad to 512 tokens
-            max_length=512,  # Explicitly set max_length to 512
-            return_tensors=None  # Do not return as PyTorch tensors (needed for HF Trainer)
+            examples["text"],  
+            truncation=True,   
+            padding="max_length",
+            max_length=512,  
+            return_tensors=None  
         )
 
     # Apply tokenization to the dataset
@@ -45,8 +43,6 @@ def preprocess_dataset(dataset: Dataset, tokenizer: BertTokenizerFast) \
 def init_model(trial: Any, model_name: str, use_bitfit: bool = False) -> \
         BertForSequenceClassification:
     """
-    Problem 2a: Implement this function.
-
     This function should be passed to your Trainer's model_init keyword
     argument. It will be used by the Trainer to initialize a new model
     for each hyperparameter tuning trial. Your implementation of this
@@ -82,8 +78,6 @@ def compute_metrics(eval_pred):
 def init_trainer(model_name: str, train_data: Dataset, val_data: Dataset,
                  use_bitfit: bool = False) -> Trainer:
     """
-    Prolem 2b: Implement this function.
-
     Creates a Trainer object that will be used to fine-tune a BERT-tiny
     model on the IMDb dataset. The Trainer should fulfill the criteria
     listed in the problem set.
@@ -97,30 +91,29 @@ def init_trainer(model_name: str, train_data: Dataset, val_data: Dataset,
     :return: A Trainer used for training
     """
     
-    # 1. Instead of using torch.get_default_device(), use this approach
-    # which works in older PyTorch versions
+    # 1. This approach which works in older PyTorch versions
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # 2. Define Training Arguments
     training_args = TrainingArguments(
-        output_dir="./checkpoints_with",  # Save checkpoints here
-        evaluation_strategy="epoch",      # Use evaluation_strategy instead of eval since eval is no-go
-        save_strategy="epoch",            # Save model at each epoch
-        per_device_train_batch_size=16,   # Training batch size
-        per_device_eval_batch_size=16,    # Eval batch size
-        learning_rate=2e-5,               # Learning rate
-        num_train_epochs=4,               # Ensure it matches Problem 1c
-        weight_decay=0.01,                # Regularization (weight decay)
-        logging_dir="./logs",             # Logging directory
-        logging_steps=500,                # Log every 500 steps
-        save_total_limit=2,               # Keep only last 2 checkpoints
-        load_best_model_at_end=True,      # Load best model based on accuracy
-        metric_for_best_model="accuracy", # Choose best model by accuracy
-        report_to="none",                 # Disable WandB/TensorBoard logging
-        dataloader_pin_memory=True,       # Optimize data loading on GPU
+        output_dir="./checkpoints_with", 
+        evaluation_strategy="epoch",     
+        save_strategy="epoch",           
+        per_device_train_batch_size=16,  
+        per_device_eval_batch_size=16,   
+        learning_rate=2e-5,              
+        num_train_epochs=4,              
+        weight_decay=0.01,               
+        logging_dir="./logs",            
+        logging_steps=500,               
+        save_total_limit=2,              
+        load_best_model_at_end=True,     
+        metric_for_best_model="accuracy",
+        report_to="none",                
+        dataloader_pin_memory=True,      
     )
 
-    # 3. Create Trainer (leave `model` blank, use `model_init` instead)
+    # 3. Create Trainer 
     trainer = Trainer(
         model_init=lambda: init_model(None, model_name, use_bitfit=use_bitfit),
         args=training_args,
@@ -134,8 +127,6 @@ def init_trainer(model_name: str, train_data: Dataset, val_data: Dataset,
 
 def hyperparameter_search_settings() -> Dict[str, Any]:
     """
-    Problem 2c: Implement this function.
-
     Returns keyword arguments passed to Trainer.hyperparameter_search.
     Your hyperparameter search must satisfy the criteria listed in the
     problem set.
@@ -158,7 +149,6 @@ def hyperparameter_search_settings() -> Dict[str, Any]:
         "n_trials": len(batch_sizes) * len(learning_rates),  # 20 trials total
         "compute_objective": lambda metrics: metrics["eval_accuracy"],
         "sampler": optuna.samplers.GridSampler(search_space),
-        # Use a different approach for hp_space when using GridSampler
         "hp_space": lambda trial: {
             "per_device_train_batch_size": trial.suggest_categorical("per_device_train_batch_size", batch_sizes),
             "learning_rate": trial.suggest_categorical("learning_rate", learning_rates),
